@@ -3,7 +3,25 @@ import { Overview } from './components/Overview';
 import uniqid from 'uniqid';
 import './css/main.css';
 
-class App extends React.Component {
+// Firebase
+import { getFirebaseConfig } from './firebase.config';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  query, 
+  orderBy, 
+  setDoc, 
+  updateDoc, 
+  serverTimestamp 
+} from 'firebase/firestore';
+import {
+  getStorage,
+  ref
+} from 'firebase/storage';
+
+export default class App extends React.Component {
   constructor() {
     super();
     // TODO: use Map() instead of Array for tasks
@@ -106,5 +124,3 @@ class App extends React.Component {
     </div>
   )}
 }
-
-export default App;
