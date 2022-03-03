@@ -6,14 +6,14 @@ class Overview extends React.Component {
 
 		return (
 			<ul className="c-overview">
-				{tasks.map((task) => {
-					let id = task.id;
+				{tasks.map((item) => {
+					let id = item.id;
 
 					return (
 						<li key={id}>
-							<p>Task #{tasks.indexOf(task) + 1}: {task.input}</p>
-							<button type="button" onClick={ () => this.props.handleDelete(id) } className="c-btn c-btn__delete-one">Delete task</button>
-            				<button type="button" onClick={ () => this.props.handleEdit(id)}className="c-btn c-btn__edit">Edit Task</button>
+							<p>Task #{tasks.indexOf(item) + 1}: {item.task}</p>
+							<button type="button" data-id={id} onClick={ (e) => this.props.handleDelete(e.target.dataset.id) } className="c-btn c-btn__delete-one">Delete task</button>
+            				<button type="button" data-id={id} onClick={ (e) => this.props.handleEdit(e.target.dataset.id)}className="c-btn c-btn__edit">Edit Task</button>
 						</li>
 					);
 				})}

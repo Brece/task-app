@@ -4,29 +4,13 @@ import uniqid from 'uniqid';
 import './css/main.css';
 
 // Firebase
-import { getFirebaseConfig } from './firebase.config';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  query, 
-  orderBy, 
-  setDoc, 
-  updateDoc, 
-  serverTimestamp 
-} from 'firebase/firestore';
-import {
-  getStorage,
-  ref
-} from 'firebase/storage';
+import { saveTask, loadTasks, deleteTask } from './firebase.js';
 
 export default class App extends React.Component {
   constructor() {
     super();
-    // TODO: use Map() instead of Array for tasks
     this.state = {
-      tasks: localStorage.length !== 0 ? JSON.parse(localStorage.getItem('tasks')) : [],
+      tasks: loadTasks() || [],
       input: '',
       edit: false,
       editId: '',
@@ -47,13 +31,40 @@ export default class App extends React.Component {
     e.preventDefault();
     const input = this.state.input;
     
+    // edit task -- firebase
+    if (this.state.edit) {
+      const task = { id: this.state.editId, task: input };
+
+      this.setState((state) => {
+        let newTasksArray = state.tasks.map((item) => {
+          if (item.id === state.editId) {
+            item = task;
+          }
+          return item;
+        });
+
+        return {
+          tasks: newTasksArray,
+          input: '',
+          editId: '',
+          id: uniqid(),
+          edit: false
+        }
+      });
+
+      saveTask(task, this.state.edit);
+      return;
+    }
+
+    /*
+    // edit task -- localstorage
     if (this.state.edit) {
       this.setState((state) => {
-        let newTasksArray = state.tasks.map((task) => {
-          if (task.id === state.editId) {
-            task = { id: state.editId, input: input };
+        let newTasksArray = state.tasks.map((item) => {
+          if (item.id === state.editId) {
+            item = { id: state.editId, task: input };
           }
-          return task;
+          return item;
         });
         localStorage.setItem('tasks', JSON.stringify(newTasksArray));
         
@@ -67,10 +78,36 @@ export default class App extends React.Component {
       });
       return;
     }
+    */
 
+    // FIXME: add task -- firebase
+    let task = this.state.tasks.find((item) => item.task === input);
+
+    if (input !== '' && task === undefined) {
+      task = {
+        task: input,
+        id: this.state.id
+      };
+
+      this.setState((state) => {
+        const tasks = [...state.tasks, task];
+
+        return {
+          tasks: tasks,
+          input: '',
+          id: uniqid()
+        }
+      });
+
+      saveTask(task, this.state.edit);
+    }
+
+    /*
+    // add new task -- localstorage
     const task = this.state.tasks.find((task) => task.input === input);
 
     if (input !== '' && task === undefined) {
+
       this.setState((state) => {
         const tasks = [...state.tasks, { id: state.id, input: state.input }];
         localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -82,6 +119,7 @@ export default class App extends React.Component {
         }
       });
     }
+    */
   }
 
   resetState() {
@@ -94,21 +132,41 @@ export default class App extends React.Component {
     localStorage.clear();
   }
 
+  // delete task -- firebase
+  handleDelete(id) {
+    const task = this.state.tasks.filter((item) => item.id === id);
+
+    this.setState((state) => {
+      let newTasksArray = state.tasks.filter((item) => item.id !== id);
+      return { tasks: newTasksArray }
+    });
+
+    deleteTask(task);
+  }
+
+  /*
+  // delete task -- local storage
   handleDelete(id) {
     this.setState((state) => {
-      let newTasksArray = state.tasks.filter((task) => task.id !== id);
+      let newTasksArray = state.tasks.filter((item) => item.id !== id);
       localStorage.setItem('tasks',JSON.stringify(newTasksArray));
       return { tasks: newTasksArray }
     });
   }
+  */
 
   handleEdit(id) {
-    const taskToEdit = this.state.tasks.find((task) => task.id === id);
+    const taskToEdit = this.state.tasks.find((item) => item.id === id);
     this.setState({
       edit: true,
-      input: taskToEdit.input,
+      input: taskToEdit.task,
       editId: taskToEdit.id
     });
+  }
+
+  //FIXME: remove this
+  componentDidMount() {
+    loadTasks();
   }
 
   render() {
