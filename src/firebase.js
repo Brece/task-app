@@ -6,13 +6,9 @@ import {
     updateDoc,
     deleteDoc,
     serverTimestamp, 
-    onSnapshot,
-    doc
+    doc,
+    getDocs
 } from 'firebase/firestore';
-import {
-    getStorage,
-    ref
-} from 'firebase/storage';
 import { db } from './firebase.config';
 
 // save a new task on the Cloud Firestore
@@ -29,11 +25,11 @@ async function saveTask(task, edit=false) {
         };
 
         if (edit) {
-            updateDoc(ref, newTask);
+            await updateDoc(ref, newTask);
             return;
         }
 
-        setDoc(ref, newTask);
+        await setDoc(ref, newTask);
     } catch (error) {
         console.error('Error writing new task to Firebase Database', error);
     }
@@ -42,7 +38,7 @@ async function saveTask(task, edit=false) {
 async function deleteTask(task) {
     try {
         const ref = doc(db, 'tasks', task.id);
-        deleteDoc(ref);
+        await deleteDoc(ref);
     } catch (error) {
         console.error('Error deleteting task from Firebase Database', error);
     }
@@ -60,23 +56,19 @@ async function clearTasks(taskArray) {
     }
 }
 // Loads tasks history and listens for upcoming ones.
-function loadTasks () {
-    const recentTasksQuery = query(collection(db, 'tasks'), orderBy('timestamp', 'desc'));
-
-    let tasksArray = [];
-    // start listening to the query
-    onSnapshot(recentTasksQuery, function(snapshot) {
-        snapshot.docChanges().forEach(function(change) {
-            if (change.type === 'removed') {
-                // deleteTask(change.doc.id);
-            } else {
-                const task = change.doc.data();
-                tasksArray.push(task);
-            }
-        })
-    });
-
-    return tasksArray;
+async function loadTasks () {
+    try {
+        let tasksArray = [];
+        const recentTasksQuery = query(collection(db, 'tasks'), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(recentTasksQuery);
+        querySnapshot.forEach((doc) => {
+            tasksArray.push(doc.data());
+        });
+        
+        return tasksArray;
+    } catch (error) {
+        console.error('Error loading tasks from Firebase Database', error);
+    }
 }
 
 export { saveTask, loadTasks, deleteTask, clearTasks };

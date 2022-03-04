@@ -3,7 +3,6 @@ import React from "react";
 class Overview extends React.Component {
 	render() {
 		let tasks = this.props.tasks;
-
 		return (
 			<ul className="c-overview">
 				{tasks.map((item) => {

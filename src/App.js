@@ -10,7 +10,7 @@ export default class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      tasks: loadTasks() || [],
+      tasks: [],
       input: '',
       edit: false,
       editId: '',
@@ -23,6 +23,14 @@ export default class App extends React.Component {
     this.handleEdit = this.handleEdit.bind(this);
   }
 
+  // first initializing for updating the state and 
+  componentDidMount() {
+    (async () => {
+      const tasks = await loadTasks();
+      this.setState({...this.state, tasks: tasks});
+    })();
+  }
+  
   handleInput(e) {
     this.setState({ input: e.target.value });
   }
@@ -56,31 +64,7 @@ export default class App extends React.Component {
       return;
     }
 
-    /*
-    // edit task -- localstorage
-    if (this.state.edit) {
-      this.setState((state) => {
-        let newTasksArray = state.tasks.map((item) => {
-          if (item.id === state.editId) {
-            item = { id: state.editId, task: input };
-          }
-          return item;
-        });
-        localStorage.setItem('tasks', JSON.stringify(newTasksArray));
-        
-        return {
-          tasks: newTasksArray,
-          input: '',
-          editId: '',
-          id: uniqid(),
-          edit: false
-        }
-      });
-      return;
-    }
-    */
-
-    // FIXME: add task -- firebase
+    // add task -- firebase
     let task = this.state.tasks.find((item) => item.task === input);
 
     if (input !== '' && task === undefined) {
@@ -101,28 +85,8 @@ export default class App extends React.Component {
 
       saveTask(task, this.state.edit);
     }
-
-    /*
-    // add new task -- localstorage
-    const task = this.state.tasks.find((task) => task.input === input);
-
-    if (input !== '' && task === undefined) {
-
-      this.setState((state) => {
-        const tasks = [...state.tasks, { id: state.id, input: state.input }];
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-
-        return {
-          tasks: tasks,
-          input: '',
-          id: uniqid()
-        }
-      });
-    }
-    */
   }
 
-  //TODO:
   resetState() {
     const tasks = this.state.tasks.map((item) => {
       return  {...item};
@@ -150,17 +114,6 @@ export default class App extends React.Component {
     deleteTask(task);
   }
 
-  /*
-  // delete task -- local storage
-  handleDelete(id) {
-    this.setState((state) => {
-      let newTasksArray = state.tasks.filter((item) => item.id !== id);
-      localStorage.setItem('tasks',JSON.stringify(newTasksArray));
-      return { tasks: newTasksArray }
-    });
-  }
-  */
-
   handleEdit(id) {
     const taskToEdit = this.state.tasks.find((item) => item.id === id);
     this.setState({
@@ -168,11 +121,6 @@ export default class App extends React.Component {
       input: taskToEdit.task,
       editId: taskToEdit.id
     });
-  }
-
-  //FIXME: remove this
-  componentDidMount() {
-    loadTasks();
   }
 
   render() {
