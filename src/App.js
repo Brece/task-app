@@ -122,6 +122,7 @@ export default class App extends React.Component {
     */
   }
 
+  //TODO:
   resetState() {
     this.setState(
       {
@@ -134,7 +135,7 @@ export default class App extends React.Component {
 
   // delete task -- firebase
   handleDelete(id) {
-    const task = this.state.tasks.filter((item) => item.id === id);
+    const task = this.state.tasks.find((item) => item.id === id);
 
     this.setState((state) => {
       let newTasksArray = state.tasks.filter((item) => item.id !== id);

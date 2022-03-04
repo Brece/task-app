@@ -7,7 +7,8 @@ import {
     query, 
     orderBy, 
     setDoc,
-    updateDoc, 
+    updateDoc,
+    deleteDoc,
     serverTimestamp, 
     onSnapshot,
     doc
@@ -23,36 +24,32 @@ async function saveTask(task, edit=false) {
     // Add a new task entry to the Firebase database.
     try {
         // create a document with a custom document ID in collection 'tasks'
+        // if collection 'tasks' doesn't exists it will be created
         const ref = doc(db, 'tasks', task.id);
-
-        if (edit) {
-            const docRef = await updateDoc(ref, {
-                task: task.task,
-                id: task.id,
-                timestamp: serverTimestamp()
-            });
-            return;
-        }
-
-        const docRef = await setDoc(ref, {
+        const newTask = {
             task: task.task,
             id: task.id,
             timestamp: serverTimestamp()
-        });
+        };
+
+        if (edit) {
+            updateDoc(ref, newTask);
+            return;
+        }
+
+        setDoc(ref, newTask);
     } catch (error) {
         console.error('Error writing new task to Firebase Database', error);
     }
 }
 
 async function deleteTask(task) {
-    const ref = doc(db, 'tasks', task.id);
-
-    const docRef = await setDoc(ref, {
-        task: task.task,
-            id: task.id,
-            timestamp: serverTimestamp()
-    })
-    console.log(docRef);
+    try {
+        const ref = doc(db, 'tasks', task.id);
+        deleteDoc(ref);
+    } catch (error) {
+        console.error('Error deleteting task from Firebase Database', error);
+    }
 }
 
 // Loads tasks history and listens for upcoming ones.
