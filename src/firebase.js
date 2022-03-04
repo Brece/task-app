@@ -1,9 +1,5 @@
-import { getFirebaseConfig } from './firebase.config';
-import { initializeApp } from 'firebase/app';
 import { 
-    getFirestore, 
     collection, 
-    addDoc, 
     query, 
     orderBy, 
     setDoc,
@@ -52,6 +48,17 @@ async function deleteTask(task) {
     }
 }
 
+async function clearTasks(taskArray) {
+    try {
+        taskArray.forEach((item) => {
+            const ref = doc(db, 'tasks', item.id);
+            deleteDoc(ref);
+            return;
+        });
+    } catch (error) {
+        console.error('Error deleteting task from Firebase Database', error);
+    }
+}
 // Loads tasks history and listens for upcoming ones.
 function loadTasks () {
     const recentTasksQuery = query(collection(db, 'tasks'), orderBy('timestamp', 'desc'));
@@ -69,9 +76,7 @@ function loadTasks () {
         })
     });
 
-    // FIXME:
-
     return tasksArray;
 }
 
-export { saveTask, loadTasks, deleteTask };
+export { saveTask, loadTasks, deleteTask, clearTasks };

@@ -4,7 +4,7 @@ import uniqid from 'uniqid';
 import './css/main.css';
 
 // Firebase
-import { saveTask, loadTasks, deleteTask } from './firebase.js';
+import { saveTask, loadTasks, deleteTask, clearTasks } from './firebase.js';
 
 export default class App extends React.Component {
   constructor() {
@@ -124,6 +124,11 @@ export default class App extends React.Component {
 
   //TODO:
   resetState() {
+    const tasks = this.state.tasks.map((item) => {
+      return  {...item};
+    });
+    clearTasks(tasks);
+
     this.setState(
       {
       tasks: [],
